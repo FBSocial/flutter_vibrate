@@ -17,12 +17,16 @@ import io.flutter.plugin.common.MethodChannel;
 class VibrateMethodCallHandler implements MethodChannel.MethodCallHandler {
     private final Vibrator vibrator;
     private final boolean hasVibrator;
-    private final Activity activity;
+    private Activity activity;
 
     VibrateMethodCallHandler(Vibrator vibrator, Activity activity) {
         assert (vibrator != null);
         this.vibrator = vibrator;
         this.hasVibrator = vibrator.hasVibrator();
+        this.activity = activity;
+    }
+
+    public void setActivity(Activity activity) {
         this.activity = activity;
     }
 

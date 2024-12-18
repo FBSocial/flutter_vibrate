@@ -14,23 +14,22 @@ import io.flutter.plugin.common.MethodChannel;
 
 public class VibratePlugin implements FlutterPlugin, ActivityAware {
     private MethodChannel methodChannel;
-    private Activity activity;
+    private VibrateMethodCallHandler methodCallHandler;
 
     @Override
     public void onAttachedToEngine(FlutterPluginBinding binding) {
         final Context context = binding.getApplicationContext();
         final BinaryMessenger messenger = binding.getBinaryMessenger();
         final Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-        final VibrateMethodCallHandler methodCallHandler = new VibrateMethodCallHandler(vibrator, activity);
+        methodCallHandler = new VibrateMethodCallHandler(vibrator, null);
 
         this.methodChannel = new MethodChannel(messenger, "vibrate");
         this.methodChannel.setMethodCallHandler(methodCallHandler);
     }
 
-
     @Override
     public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
-        activity = binding.getActivity();
+        this.methodCallHandler.setActivity(binding.getActivity());
     }
 
     @Override
@@ -45,12 +44,13 @@ public class VibratePlugin implements FlutterPlugin, ActivityAware {
 
     @Override
     public void onDetachedFromActivity() {
-        activity = null;
+        this.methodCallHandler.setActivity(null);
     }
 
     @Override
     public void onDetachedFromEngine(FlutterPluginBinding binding) {
         this.methodChannel.setMethodCallHandler(null);
         this.methodChannel = null;
+        this.methodCallHandler.setActivity(null);
     }
 }
