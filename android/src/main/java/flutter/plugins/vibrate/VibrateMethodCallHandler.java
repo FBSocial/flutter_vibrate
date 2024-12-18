@@ -1,9 +1,15 @@
 package flutter.plugins.vibrate;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Vibrator;
 import android.os.VibrationEffect;
 import android.view.HapticFeedbackConstants;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -11,28 +17,32 @@ import io.flutter.plugin.common.MethodChannel;
 class VibrateMethodCallHandler implements MethodChannel.MethodCallHandler {
     private final Vibrator vibrator;
     private final boolean hasVibrator;
-    private final boolean legacyVibrator;
+    private final Activity activity;
 
-    VibrateMethodCallHandler(Vibrator vibrator) {
+    VibrateMethodCallHandler(Vibrator vibrator, Activity activity) {
         assert (vibrator != null);
         this.vibrator = vibrator;
         this.hasVibrator = vibrator.hasVibrator();
-        this.legacyVibrator = Build.VERSION.SDK_INT < 26;
+        this.activity = activity;
     }
 
     @SuppressWarnings("deprecation")
     private void vibrate(int duration) {
         if (hasVibrator) {
-            if (legacyVibrator) {
-                vibrator.vibrate(duration);
-            } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 vibrator.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                vibrator.vibrate(duration);
             }
         }
     }
 
     @Override
     public void onMethodCall(MethodCall call, MethodChannel.Result result) {
+        if (!(ContextCompat.checkSelfPermission(activity, android.Manifest.permission.VIBRATE) == PackageManager.PERMISSION_GRANTED)) {
+            // 如果没有权限，需要请求权限
+            ActivityCompat.requestPermissions(activity, new String[]{android.Manifest.permission.VIBRATE}, 0);
+        }
         switch (call.method) {
             case "canVibrate":
                 result.success(hasVibrator);
