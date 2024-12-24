@@ -59,14 +59,7 @@ public class SwiftVibratePlugin: NSObject, FlutterPlugin {
               AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
             }
           case "error":
-            if #available(iOS 10.0, *) {
-              let notification = UINotificationFeedbackGenerator()
-              notification.prepare()
-              notification.notificationOccurred(.error)
-            } else {
-              // Fallback on earlier versions
               AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
-            }
           case "heavy":
             if #available(iOS 10.0, *) {
               let generator = UIImpactFeedbackGenerator(style: .heavy)
